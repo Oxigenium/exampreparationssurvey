@@ -7,7 +7,7 @@
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
 <script defer src="main.js"></script>
 </head>
-<body><script id="template" type="text/x-handlebars-template">{"elements":[{"type":"checkbox","name": "{{{escapeJson cellsArray.[2]}}}","title":"<pre>{{{escapeJson cellsArray.[3]}}} </pre>","isRequired":true,"showNoneItem":false,"choices":{{{variants (escapeJson cellsArray.[4])}}},"correctAnswer":{{{correctAnswers cellsArray.[5] (variants (escapeJson cellsArray.[4]))}}} },{"type":"html","name":"reasoning","html":"{{{escapeJson cellsArray.[6]}}}","visible":false}]},</script>
+<body><script id="template" type="text/x-handlebars-template">{"elements":[{"type":"checkbox","name": "{{{escapeJson cellsArray.[2]}}}","title":"<pre>{{{cellsArray.[2]}}}. {{{escapeJson cellsArray.[3]}}} </pre>","isRequired":true,"showNoneItem":false,"choices":{{{variants (escapeJson cellsArray.[4])}}},"correctAnswer":{{{correctAnswers cellsArray.[5] (variants (escapeJson cellsArray.[4]))}}} },{"type":"html","name":"reasoning","html":"{{{escapeJson cellsArray.[6]}}}","visible":false}]},</script>
 <script id="setup-template" type="text/x-handlebars-template">
   {"value":"{{{cellsArray.[1]}}}","text":"{{{cellsArray.[0]}}} - {{{cellsArray.[1]}}} ({{{cellsArray.[2]}}})"},</script>
 <div id="questions" style="display: none;"></div>
