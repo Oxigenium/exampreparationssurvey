@@ -88,8 +88,12 @@ function makeQuiz(html) {
     onComplete: (data) => alert(JSON.stringify(data.data)),
     onCurrentPageChanging: onCurrentPageChanging,
     onTextMarkdown: onTextMarkdown,
-    onAfterRenderSurvey: function () {
-        hotkeys('1,2,3,4,5,6,7,8,9,0,a,b,c,d,e,f,g,h,space,enter,backspace', function (event, handler){
+    onAfterRenderSurvey: () => mapHotkeys(survey)
+  });
+}
+
+function mapHotkeys(survey) {
+  hotkeys('1,2,3,4,5,6,7,8,9,0,a,b,c,d,e,f,g,h,space,enter,backspace', function (event, handler){
         console.log(handler.key);
         var firstQuestionOnPage = survey.activePage.questions[0];
         var questionName = firstQuestionOnPage.getValueName();
@@ -103,9 +107,6 @@ function makeQuiz(html) {
           survey.prevPage();
         }
       });
-    }
-  });
-  
 }
 
 function findChoice(choices, index) {
