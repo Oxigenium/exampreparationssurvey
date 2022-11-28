@@ -21,8 +21,6 @@ $(function () {
     requestTable(
       "select A, B, count(C) where (C != '' AND A != 'Book') group by A, B order by B asc",
       function (response) {
-        console.log(response);
-
         const survey = new Survey.Model(combineSetupSurvey(response.html));
 
         $("#surveyContainer").Survey({
@@ -94,7 +92,6 @@ function makeQuiz(html) {
 
 function mapHotkeys(survey) {
   hotkeys('1,2,3,4,5,6,7,8,9,0,a,b,c,d,e,f,g,h,space,enter,backspace', function (event, handler){
-        console.log(handler.key);
         var firstQuestionOnPage = survey.activePage.questions[0];
         var questionName = firstQuestionOnPage.getValueName();
         var choices = firstQuestionOnPage.getChoices().map(c => c.value);
