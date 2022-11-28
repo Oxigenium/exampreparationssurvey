@@ -5,6 +5,7 @@
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery-sheetrock/1.2.0/dist/sheetrock.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
+<script defer src="https://unpkg.com/hotkeys-js@3.10.1/dist/hotkeys.min.js"></script>
 <script defer src="main.js"></script>
 </head>
 <body><script id="template" type="text/x-handlebars-template">{"elements":[{"type":"checkbox","name": "{{{escapeJson cellsArray.[2]}}}","title":"<pre>{{{cellsArray.[2]}}}. {{{escapeJson cellsArray.[3]}}} </pre>","isRequired":true,"showNoneItem":false,"choices":{{{variants (escapeJson cellsArray.[4])}}},"correctAnswer":{{{correctAnswers cellsArray.[5] (variants (escapeJson cellsArray.[4]))}}} },{"type":"html","name":"reasoning","html":"{{{escapeJson cellsArray.[6]}}}","visible":false}]},</script>
