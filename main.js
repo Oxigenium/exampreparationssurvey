@@ -5,11 +5,12 @@ var config = {
     "https://docs.google.com/spreadsheets/d/1UvH8jHZu3mLjZv-gJaMIZOXlwkOBm_pnZrCUsW9f1Mk/edit#gid=0?usp=sharing",
   preventPageChangeOnIncorrect: true,
   insertPre: true,
-  request: "select A,B,C,D,E,F,G,H Where D != '' AND C != 'Question'",
+  request: "select A,B,C,D,E,F,G,H Where D != '' AND C != 'Question' AND C = 'C1Q64'",
   recordsCount: 50,
   limitRecordsAfterShuffling: true,
   timePerQuestion: (90 * 60) / 50,
   initialization: true,
+  useHotkeys: true,
   questionsRandomOrder: true
 };
 
@@ -46,6 +47,7 @@ $(function () {
 
 function init() {
   Survey.StylesManager.applyTheme("modern");
+  
   converter = new showdown.Converter();
   Handlebars.registerHelper("escapeJson", function (string) {
     return escapeString(string);
@@ -85,16 +87,51 @@ function makeQuiz(html) {
     onCompleting: onCompleting,
     onComplete: (data) => alert(JSON.stringify(data.data)),
     onCurrentPageChanging: onCurrentPageChanging,
-    onTextMarkdown: onTextMarkdown
+    onTextMarkdown: onTextMarkdown,
+    onAfterRenderSurvey: function () {
+        hotkeys('1,2,3,4,5,6,7,8,9,0,a,b,c,d,e,f,g,h,space,enter,backspace', function (event, handler){
+        console.log(handler.key);
+        var firstQuestionOnPage = survey.activePage.questions[0];
+        var questionName = firstQuestionOnPage.getValueName();
+        var choices = firstQuestionOnPage.getChoices().map(c => c.value);
+        var currentValue = firstQuestionOnPage.getAllValues();
+        if (/^[0-9a-hA-H]{1}$/.test(handler.key)) {
+          toggleChoice(firstQuestionOnPage, currentValue, questionName, findChoice(choices, handler.key));
+        } else if (/^space$|^enter$/.test(handler.key)) {
+          survey.nextPage();
+        } else {
+          survey.prevPage();
+        }
+      });
+    }
   });
+  
+}
+
+function findChoice(choices, index) {
+  if (/^[0-9]{1}$/.test(index)) {
+    return choices[index-1];
+  } else if (/^[a-h]{1}$/.test(index)) {
+    return choices.filter(c => c.trim().slice(0,1).toUpperCase() === index.toUpperCase())[0];
+  }
+}
+
+function toggleChoice(question, value, questionName, choice) {
+  if (choice == undefined) {
+    return;
+  }
+  if (!value.hasOwnProperty(questionName)) {
+    value[questionName] = [];
+  }
+  if (~value[questionName].indexOf(choice)) {
+    value[questionName] = value[questionName].filter(c => c !== choice);
+  } else {
+    value[questionName].push(choice);
+  }
+  question.setNewValue(value[questionName]);
 }
 
 function fulfilSetupConfig(setupData, config) {
-  console.log(JSON.stringify(setupData));
-  /*chapter: "Practice Exam 1"
-questionCount: "1"
-shuffle:true
-testMode: true*/
   config.questionsRandomOrder = setupData.shuffle;
   config.preventPageChangeOnIncorrect = !setupData.testMode;
   config.recordsCount = +setupData.questionCount;
@@ -115,7 +152,6 @@ function combineSetupSurvey(html) {
     JSON.stringify(choices) +
     "}]}";
   var json = JSON.parse(jsonString);
-  console.log(json);
   return json;
 }
 
@@ -138,7 +174,6 @@ function transformQuestions(html) {
     ) +
     "}";
   var json = JSON.parse(jsonString);
-  console.log(json);
   return json;
 }
 
