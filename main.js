@@ -175,15 +175,15 @@ function transformQuestions(html) {
   return json;
 }
 
-function splitVariants(variants) {
-  return JSON.stringify(
-    variants
-      .split(/[\\]n/)
-      .filter((s) => s || s.trim())
-      .map((v) => {
-        return { value: v.slice(0, 2), text: config.insertPre ? addPre(v) : v };
-      })
-  );
+function splitVariants(variants) {	
+  var splittedVars = variants	
+      .split(/([A-H]\.[ ])/)	
+      .filter((s) => s || s.trim());	
+  var vars = [];	
+  for (var i = 0; i< splittedVars.length; i = i + 2) {	
+    vars.push({ value: splittedVars[i], text: config.insertPre ? addPre(splittedVars[i] + ' ' + splittedVars[i+1]) : splittedVars[i] + ' ' + splittedVars[i+1] });	
+  }	
+  return JSON.stringify(vars);
 }
 
 function addPre(s) {
@@ -211,15 +211,15 @@ function getFullCorrectAnswers(answers, variants) {
 
 function escapeString(json) {
   var escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff<]/g;
-  var meta = {
-    // table of character substitutions
-    "\b": "\\b",
-    "\t": "\\t",
-    "\n": "\\n",
-    "\f": "\\f",
-    "\r": "\\r",
-    '"': '&quot;',
-    '<': '&lt;',
+  var meta = {	
+    // table of character substitutions	
+    "\b": "\\b",	
+    "\t": "&#9;",	
+    "\n": "<br>",	
+    "\f": "\\f",	
+    "\r": "\\r",	
+    '"': '&quot',	
+    '<': '&lt;',	
     "\\": "\\\\"
   };
 
