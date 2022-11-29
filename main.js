@@ -218,7 +218,7 @@ function escapeString(json) {
     "\n": "\\n",
     "\f": "\\f",
     "\r": "\\r",
-    '"': '&quot',
+    '"': '&quot;',
     '<': '&lt;',
     "\\": "\\\\"
   };
