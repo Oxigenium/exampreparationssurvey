@@ -5,8 +5,9 @@ var config = {
     "https://docs.google.com/spreadsheets/d/1UvH8jHZu3mLjZv-gJaMIZOXlwkOBm_pnZrCUsW9f1Mk/edit#gid=0?usp=sharing",
   preventPageChangeOnIncorrect: true,
   insertPre: true,
-  request: "select A,B,C,D,E,F,G,H Where D != '' AND C != 'Question' AND C = 'C1Q64'",
+  request: "select A,B,C,D,E,F,G,H Where D != '' AND C != 'Question' AND C LIKE 'C1Q25'",
   recordsCount: 50,
+  excludeUnfilledQuestions: true,
   limitRecordsAfterShuffling: true,
   timePerQuestion: (90 * 60) / 50,
   initialization: true,
@@ -19,7 +20,7 @@ $(function () {
 
   if (config.initialization) {
     requestTable(
-      "select A, B, count(C) where (C != '' AND A != 'Book') group by A, B order by B asc",
+      "select A, B, count(C) where (C != '' AND A != 'Book')" + (config.excludeUnfilledQuestions ? addEmptyQuestionExclusionCondition() : "") + " group by A, B order by B asc",
       function (response) {
         const survey = new Survey.Model(combineSetupSurvey(response.html));
 
@@ -37,7 +38,7 @@ $(function () {
       true
     );
   } else {
-    requestTable(config.request, function (response) {
+    requestTable(config.request + (config.excludeUnfilledQuestions ? addEmptyQuestionExclusionCondition() : ""), function (response) {
       makeQuiz(response.html);
     });
   }
@@ -77,6 +78,7 @@ function requestTable(filter, callback, templateId, allRecords = false) {
 
 function makeQuiz(html) {
   const json = transformQuestions(html);
+  console.log(json);
   const survey = new Survey.Model(json);
   survey.focusFirstQuestionAutomatic = false;
 
@@ -114,6 +116,21 @@ function findChoice(choices, index) {
   }
 }
 
+function addEmptyQuestionExclusionCondition() {
+  return " AND D != '' AND E != '' AND F != '' AND G != ''";
+}
+
+function addImgToTitleIfNeccesary(page) {
+  if (!page || !page.elements || page.elements == 0 || !page.elements[0] || !page.elements[0].imageUrl) {
+    return page;
+  }
+  
+  var img = document.createElement("img");
+    img.src = page.elements[0].imageUrl;
+  page.elements[0].title = img.outerHTML + " " + page.elements[0].title;
+  return page;
+}
+
 function toggleChoice(question, value, questionName, choice) {
   if (choice == undefined) {
     return;
@@ -137,9 +154,9 @@ function fulfilSetupConfig(setupData, config) {
     config.request =
       "select A,B,C,D,E,F,G,H Where D != '' AND C != 'Question' AND B = '" +
       setupData.chapter +
-      "'";
+      "'" + (config.excludeUnfilledQuestions ? addEmptyQuestionExclusionCondition() : "");
   } else {
-    config.request = "select A,B,C,D,E,F,G,H Where D != '' AND C != 'Question'";
+    config.request = "select A,B,C,D,E,F,G,H Where D != '' AND C != 'Question'" + (config.excludeUnfilledQuestions ? addEmptyQuestionExclusionCondition() : "");
   }
 }
 
@@ -158,7 +175,7 @@ function template(id) {
 }
 
 function transformQuestions(html) {
-  var pages = JSON.parse("[" + html.slice(0, -1) + "]");
+  var pages = JSON.parse("[" + html.slice(0, -1) + "]").map(p => addImgToTitleIfNeccesary(p));
   var jsonString =
     '{"title":"OCP Test","showProgressBar": "bottom","showTimerPanel": "top","maxTimeToFinish": ' +
     config.timePerQuestion * config.recordsCount +
@@ -175,14 +192,14 @@ function transformQuestions(html) {
   return json;
 }
 
-function splitVariants(variants) {	
-  var splittedVars = variants	
-      .split(/([A-H]\.[ ])/)	
-      .filter((s) => s || s.trim());	
-  var vars = [];	
-  for (var i = 0; i< splittedVars.length; i = i + 2) {	
-    vars.push({ value: splittedVars[i], text: config.insertPre ? addPre(splittedVars[i] + ' ' + splittedVars[i+1]) : splittedVars[i] + ' ' + splittedVars[i+1] });	
-  }	
+function splitVariants(variants) {
+  var splittedVars = variants
+      .split(/([A-H]\.[ ])/)
+      .filter((s) => s || s.trim());
+  var vars = [];
+  for (var i = 0; i< splittedVars.length; i = i + 2) {
+    vars.push({ value: splittedVars[i], text: config.insertPre ? addPre(splittedVars[i] + ' ' + splittedVars[i+1]) : splittedVars[i] + ' ' + splittedVars[i+1] });
+  }
   return JSON.stringify(vars);
 }
 
@@ -211,15 +228,15 @@ function getFullCorrectAnswers(answers, variants) {
 
 function escapeString(json) {
   var escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff<]/g;
-  var meta = {	
-    // table of character substitutions	
-    "\b": "\\b",	
-    "\t": "&#9;",	
-    "\n": "<br>",	
-    "\f": "\\f",	
-    "\r": "\\r",	
-    '"': '&quot',	
-    '<': '&lt;',	
+  var meta = {
+    // table of character substitutions
+    "\b": "\\b",
+    "\t": "&#9;",
+    "\n": "<br>",
+    "\f": "\\f",
+    "\r": "\\r",
+    '"': '&quot',
+    '<': '&lt;',
     "\\": "\\\\"
   };
 
