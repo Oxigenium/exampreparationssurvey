@@ -5,7 +5,7 @@ var config = {
     "https://docs.google.com/spreadsheets/d/1UvH8jHZu3mLjZv-gJaMIZOXlwkOBm_pnZrCUsW9f1Mk/edit#gid=0?usp=sharing",
   preventPageChangeOnIncorrect: true,
   insertPre: true,
-  request: "select A,B,C,D,E,F,G,H Where D != '' AND C != 'Question' AND C LIKE 'C1Q25'",
+  request: "select A,B,C,D,E,F,G,H Where AND C != 'Question' AND C LIKE 'C1Q25'",
   recordsCount: 50,
   excludeUnfilledQuestions: true,
   limitRecordsAfterShuffling: true,
@@ -84,6 +84,7 @@ function makeQuiz(html) {
 
   $("#surveyContainer").Survey({
     model: survey,
+    focusOnFirstError: false,
     onCompleting: onCompleting,
     onComplete: (data) => alert(JSON.stringify(data.data)),
     onCurrentPageChanging: onCurrentPageChanging,
@@ -156,7 +157,7 @@ function fulfilSetupConfig(setupData, config) {
       setupData.chapter +
       "'" + (config.excludeUnfilledQuestions ? addEmptyQuestionExclusionCondition() : "");
   } else {
-    config.request = "select A,B,C,D,E,F,G,H Where D != '' AND C != 'Question'" + (config.excludeUnfilledQuestions ? addEmptyQuestionExclusionCondition() : "");
+    config.request = "select A,B,C,D,E,F,G,H Where C != 'Question'" + (config.excludeUnfilledQuestions ? addEmptyQuestionExclusionCondition() : "");
   }
 }
 
@@ -194,7 +195,7 @@ function transformQuestions(html) {
 
 function splitVariants(variants) {
   var splittedVars = variants
-      .split(/([A-H]\.[ ])/)
+      .split(/([A-H]\.\s{0,1})/)
       .filter((s) => s || s.trim());
   var vars = [];
   for (var i = 0; i< splittedVars.length; i = i + 2) {
@@ -211,7 +212,9 @@ function delPre(s) {
 }
 
 function getFullCorrectAnswers(answers, variants) {
-  return JSON.stringify(
+  
+  try {
+    return JSON.stringify(
     answers
       .split(",")
       .map(
@@ -223,7 +226,11 @@ function getFullCorrectAnswers(answers, variants) {
                 .slice(0, 1) === a.trim()
           )[0].value
       )
-  );
+    );
+  } catch (e) {
+    console.error('There is an error to find answers ' + answers + ' among these variants ' + JSON.stringify(variants));
+    console.error(e);
+  }
 }
 
 function escapeString(json) {
