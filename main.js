@@ -277,8 +277,10 @@ function onCurrentPageChanging(survey, option) {
     return;
   }
   if (!option.oldCurrentPage.getFirstQuestionToFocus().isAnswerCorrect()) {
-    option.allowChanging = false;
+    option.allowChanging = false
     option.oldCurrentPage.getQuestionByName("reasoning").visible = true;
+    document.getElementById("questions").focus();
+    
   } else {
     option.oldCurrentPage.getQuestionByName("reasoning").visible = false;
   }
