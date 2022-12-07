@@ -88,6 +88,7 @@ function makeQuiz(html) {
     onCompleting: onCompleting,
     onComplete: (data) => alert(JSON.stringify(data.data)),
     onCurrentPageChanging: onCurrentPageChanging,
+    onAfterRenderPage: () => window.scrollTo(0,0),
     onTextMarkdown: onTextMarkdown,
     onAfterRenderSurvey: () => mapHotkeys(survey)
   });
