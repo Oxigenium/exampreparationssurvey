@@ -166,7 +166,7 @@ function fulfilSetupConfig(setupData, config) {
 function combineSetupSurvey(html) {
   var choices = JSON.parse("[" + html.slice(0, -1) + "]");
   var jsonString =
-    '{"showQuestionNumbers": "off","elements":[{"type":"boolean","name":"shuffle","defaultValue":'+config.questionsRandomOrder+',"title":"Перемешать?"},{"type":"boolean","name":"testMode","defaultValue":'+!config.preventPageChangeOnIncorrect+',"title":"Режим теста?"},{"type":"text","name":"questionCount","inputType":"number","title":"Количество вопросов?","defaultValue":'+config.recordsCount+',"validators": [{ "type": "numeric", "text": "Value must be a number", "minValue":1, "maxValue": 231 }]},{"type": "dropdown","defaultValue":"none","name": "chapter","noneText":"all", "title": "Which chapter need to exam?","isRequired": true,"colCount": 0,"showNoneItem": true, "choices":' +
+    '{"showQuestionNumbers": "off","elements":[{"type":"boolean","name":"shuffle","defaultValue":'+config.questionsRandomOrder+',"title":"Shuffle?"},{"type":"boolean","name":"testMode","defaultValue":'+!config.preventPageChangeOnIncorrect+',"title":"Test mode?"},{"type":"text","name":"questionCount","inputType":"number","title":"Questions count?","defaultValue":'+config.recordsCount+',"validators": [{ "type": "numeric", "text": "Value must be a number", "minValue":1, "maxValue": 231 }]},{"type": "dropdown","defaultValue":"none","name": "chapter","noneText":"all", "title": "Which chapter need to exam?","isRequired": true,"colCount": 0,"showNoneItem": true, "choices":' +
     JSON.stringify(choices) +
     "}]}";
   var json = JSON.parse(jsonString);
@@ -181,7 +181,7 @@ function transformQuestions(html) {
   var pages = JSON.parse("[" + html.slice(0, -1) + "]").map(p => addImgToTitleIfNeccesary(p));
   var jsonString =
     '{"title":"OCP Test","showProgressBar": "bottom","showTimerPanel": "top","maxTimeToFinish": ' +
-    config.timePerQuestion * config.recordsCount +
+    config.timePerQuestion * Math.min(config.recordsCount, pages.length) +
     ', "completedHtml":"<h4>You got <b>{correctAnswers}</b> out of <b>{questionCount}</b> correct answers.</h4>", "completedHtmlOnCondition": [{"expression": "{correctAnswers} == 0","html": "<h4>Unfortunately, none of your answers is correct. Please try again.</h4>"}, {"expression": "{correctAnswers} == {questionCount}","html": "<h4>Congratulations! You answered all the questions correctly!</h4>"}], "pages":' +
     JSON.stringify(
       config.questionsRandomOrder
@@ -236,7 +236,7 @@ function getFullCorrectAnswers(answers, variants) {
 }
 
 function escapeString(json) {
-  var escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff<]/g;
+  var escapable = /[;\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff<]/g;
   var meta = {
     // table of character substitutions
     "\b": "\\b",
@@ -245,6 +245,7 @@ function escapeString(json) {
     "\f": "\\f",
     "\r": "\\r",
     '"': '&quot',
+    ';': '&#59;',
     '<': '&lt;',
     "\\": "\\\\"
   };
