@@ -5,7 +5,7 @@ var config = {
     "https://docs.google.com/spreadsheets/d/1UvH8jHZu3mLjZv-gJaMIZOXlwkOBm_pnZrCUsW9f1Mk/edit#gid=0?usp=sharing",
   preventPageChangeOnIncorrect: true,
   insertPre: true,
-  request: "select A,B,C,D,E,F,G,H Where AND C != 'Question' AND C LIKE 'C1Q25'",
+  request: "select A,B,C,D,E,F,G,H Where C != 'Question' AND C = 'C6Q116'",
   recordsCount: 50,
   excludeUnfilledQuestions: true,
   limitRecordsAfterShuffling: true,
@@ -20,7 +20,7 @@ $(function () {
 
   if (config.initialization) {
     requestTable(
-      "select A, B, count(C) where (C != '' AND A != 'Book')" + (config.excludeUnfilledQuestions ? addEmptyQuestionExclusionCondition() : "") + " group by A, B order by B asc",
+      "select A, B, count(C) where (C != '' AND A != 'Book')" + (config.excludeUnfilledQuestions ? addEmptyQuestionExclusionCondition() : "") + " group by A, B order by A, B",
       function (response) {
         const survey = new Survey.Model(combineSetupSurvey(response.html));
 
@@ -71,6 +71,8 @@ function requestTable(filter, callback, templateId, allRecords = false) {
     callback: function (error, options, response) {
       if (error == null) {
         callback(response);
+      } else {
+        console.error(error);
       }
     }
   });
@@ -78,7 +80,6 @@ function requestTable(filter, callback, templateId, allRecords = false) {
 
 function makeQuiz(html) {
   const json = transformQuestions(html);
-  console.log(json);
   const survey = new Survey.Model(json);
   survey.focusFirstQuestionAutomatic = false;
 
