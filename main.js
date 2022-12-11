@@ -104,7 +104,11 @@ function mapHotkeys(survey) {
         if (/^[0-9a-hA-H]{1}$/.test(handler.key)) {
           toggleChoice(firstQuestionOnPage, currentValue, questionName, findChoice(choices, handler.key));
         } else if (/^space$|^enter$/.test(handler.key)) {
-          survey.nextPage();
+          if (survey.isLastPage) {         
+            survey.completeLastPage(); 
+          } else {        
+            survey.nextPage();  
+          }
         } else {
           survey.prevPage();
         }
