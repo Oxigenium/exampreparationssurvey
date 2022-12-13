@@ -87,12 +87,25 @@ function makeQuiz(html) {
     model: survey,
     focusOnFirstError: false,
     onCompleting: onCompleting,
-    onComplete: (data) => alert(JSON.stringify(data.data)),
+    onComplete: printResult,
     onCurrentPageChanging: onCurrentPageChanging,
     onAfterRenderPage: () => window.scrollTo(0,0),
     onTextMarkdown: onTextMarkdown,
     onAfterRenderSurvey: () => mapHotkeys(survey)
   });
+}
+
+function printResult(survey, options) {
+  var answers = survey.data;
+  var questions = survey.getQuestionsByNames(Object.keys(survey.data));
+  
+  console.log(questions.map(q => { return {
+    question: q.name,
+    answer: answers.[q.name],
+    correctAnswer: q.correctAnswer,
+    isAnswerCorrect: q.isAnswerCorrect(),
+    wasMistakes: q.wasMistakes || false
+  };}));
 }
 
 function mapHotkeys(survey) {
@@ -186,7 +199,7 @@ function transformQuestions(html) {
   var jsonString =
     '{"title":"OCP Test","showProgressBar": "bottom","showTimerPanel": "top","maxTimeToFinish": ' +
     config.timePerQuestion * Math.min(config.recordsCount, pages.length) +
-    ', "completedHtml":"<h4>You got <b>{correctAnswers}</b> out of <b>{questionCount}</b> correct answers.</h4>", "completedHtmlOnCondition": [{"expression": "{correctAnswers} == 0","html": "<h4>Unfortunately, none of your answers is correct. Please try again.</h4>"}, {"expression": "{correctAnswers} == {questionCount}","html": "<h4>Congratulations! You answered all the questions correctly!</h4>"}], "pages":' +
+    ', "completedHtml":"<h4>You got <b>{correctAnswers}</b> out of <b>{questionCount}</b> correct answers. Question ids with wrong answers are printed to console.</h4>", "completedHtmlOnCondition": [{"expression": "{correctAnswers} == 0","html": "<h4>Unfortunately, none of your answers is correct. Please try again. Question ids are printed to console.</h4>"}, {"expression": "{correctAnswers} == {questionCount}","html": "<h4>Congratulations! You answered all the questions correctly!</h4>"}], "pages":' +
     JSON.stringify(
       config.questionsRandomOrder
         ? config.limitRecordsAfterShuffling
@@ -272,6 +285,7 @@ function onCompleting(survey, option) {
   if (!survey.activePage.getFirstQuestionToFocus().isAnswerCorrect()) {
     option.allowComplete = false;
     survey.activePage.getQuestionByName("reasoning").visible = true;
+    survey.activePage.getFirstQuestionToFocus().wasMistakes = true;
   } else {
     survey.activePage.getQuestionByName("reasoning").visible = false;
   }
@@ -287,7 +301,7 @@ function onCurrentPageChanging(survey, option) {
     option.allowChanging = false
     option.oldCurrentPage.getQuestionByName("reasoning").visible = true;
     document.getElementById("questions").focus();
-    
+    option.oldCurrentPage.getFirstQuestionToFocus().wasMistakes = true;
   } else {
     option.oldCurrentPage.getQuestionByName("reasoning").visible = false;
   }
