@@ -101,7 +101,7 @@ function printResult(survey, options) {
   
   console.log(questions.map(q => { return {
     question: q.name,
-    answer: answers.[q.name],
+    answer: answers[q.name],
     correctAnswer: q.correctAnswer,
     isAnswerCorrect: q.isAnswerCorrect(),
     wasMistakes: q.wasMistakes || false
