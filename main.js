@@ -95,17 +95,30 @@ function makeQuiz(html) {
   });
 }
 
+function formatDate(currentDate) {
+  const currentDate = new Date();
+  const date = currentDate.getDate();
+  const month = currentDate.getMonth() + 1; // January is 0
+  const year = currentDate.getFullYear();
+
+  return `${date.toString().padStart(2, '0')}.${month.toString().padStart(2, '0')}.${year}`;
+}
+
 function printResult(survey, options) {
   var answers = survey.data;
-  var questions = survey.getQuestionsByNames(Object.keys(survey.data));
+  var questions = survey.getQuestionsByNames(Object.keys(answers));
+  var resultsByQuestion = questions.map(q => { 
+    return {
+      question: q.name,
+      answer: answers[q.name],
+      correctAnswer: q.correctAnswer,
+      isAnswerCorrect: q.isAnswerCorrect(),
+      wasMistakes: q.hasOwnProperty('wasMistakes') ? q.wasMistakes : !q.isAnswerCorrect(),
+      date: formatDate(new Date())
+    };
+  });
   
-  console.log(questions.map(q => { return {
-    question: q.name,
-    answer: answers[q.name],
-    correctAnswer: q.correctAnswer,
-    isAnswerCorrect: q.isAnswerCorrect(),
-    wasMistakes: q.hasOwnProperty('wasMistakes') ? q.wasMistakes : !q.isAnswerCorrect()
-  };}));
+  console.log(resultsByQuestion.map(r => `${r.name}\t${r.wasMistakes}\t${r.answers}\t${r.date}`).join('\n'));
 }
 
 function mapHotkeys(survey) {
