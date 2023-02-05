@@ -5,12 +5,12 @@ var config = {
     "https://docs.google.com/spreadsheets/d/1UvH8jHZu3mLjZv-gJaMIZOXlwkOBm_pnZrCUsW9f1Mk/edit#gid=0?usp=sharing",
   preventPageChangeOnIncorrect: true,
   insertPre: true,
-  request: "select A,B,C,D,E,F,G,H Where C != 'Question' AND C = 'C6Q116'",
+  request: "select A,B,C,D,E,F,G,H Where C != 'Question' AND C = 'C2Q23'",
   recordsCount: 50,
   excludeUnfilledQuestions: true,
   limitRecordsAfterShuffling: true,
   timePerQuestion: (90 * 60) / 50,
-  initialization: true,
+  initialization: false,
   useHotkeys: true,
   questionsRandomOrder: true
 };
@@ -104,7 +104,7 @@ function printResult(survey, options) {
     answer: answers[q.name],
     correctAnswer: q.correctAnswer,
     isAnswerCorrect: q.isAnswerCorrect(),
-    wasMistakes: q.wasMistakes || false
+    wasMistakes: q.hasOwnProperty('wasMistakes') ? q.wasMistakes : q.isAnswerCorrect()
   };}));
 }
 
