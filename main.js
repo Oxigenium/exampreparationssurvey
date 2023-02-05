@@ -10,7 +10,7 @@ var config = {
   excludeUnfilledQuestions: true,
   limitRecordsAfterShuffling: true,
   timePerQuestion: (90 * 60) / 50,
-  initialization: false,
+  initialization: true,
   useHotkeys: true,
   questionsRandomOrder: true
 };
