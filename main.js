@@ -96,7 +96,6 @@ function makeQuiz(html) {
 }
 
 function formatDate(currentDate) {
-  const currentDate = new Date();
   const date = currentDate.getDate();
   const month = currentDate.getMonth() + 1; // January is 0
   const year = currentDate.getFullYear();
