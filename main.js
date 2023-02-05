@@ -117,7 +117,7 @@ function printResult(survey, options) {
     };
   });
   
-  console.log(resultsByQuestion.map(r => `${r.name}\t${r.wasMistakes}\t${r.answers}\t${r.date}`).join('\n'));
+  console.log(resultsByQuestion.map(r => `${r.question}\t${r.wasMistakes}\t${r.answer}\t${r.date}`).join('\n'));
 }
 
 function mapHotkeys(survey) {
