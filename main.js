@@ -116,8 +116,18 @@ function printResult(survey, options) {
       date: formatDate(new Date())
     };
   });
-  
-  console.log(resultsByQuestion.map(r => `${r.question}\t${r.wasMistakes}\t${r.answer}\t${r.date}`).join('\n'));
+  var tableWithResult = resultsByQuestion.map(r => `${r.question}\t${r.wasMistakes}\t${r.answer}\t${r.date}`).join('\n');
+  copyToClipboard(tableWithResult);
+  console.log(tableWithResult);
+}
+
+function copyToClipboard(text) {
+  var dummy = document.createElement("textarea");
+  document.body.appendChild(dummy);
+  dummy.value = text;
+  dummy.select();
+  document.execCommand("copy");
+  document.body.removeChild(dummy);
 }
 
 function mapHotkeys(survey) {
