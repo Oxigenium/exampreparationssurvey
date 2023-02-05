@@ -112,7 +112,7 @@ function printResult(survey, options) {
       answer: answers[q.name],
       correctAnswer: q.correctAnswer,
       isAnswerCorrect: q.isAnswerCorrect(),
-      wasMistakes: q.hasOwnProperty('wasMistakes') ? q.wasMistakes : !q.isAnswerCorrect(),
+      wasMistakes: +(q.hasOwnProperty('wasMistakes') ? q.wasMistakes : !q.isAnswerCorrect()),
       date: formatDate(new Date())
     };
   });
