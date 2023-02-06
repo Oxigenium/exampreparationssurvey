@@ -199,7 +199,6 @@ function fulfilSetupConfig(setupData, config) {
       "'" + (config.excludeUnfilledQuestions ? addEmptyQuestionExclusionCondition() : "");
   } else if (setupData.explicitFilter !== "") {
     config.request = "select A,B,C,D,E,F,G,H Where C != 'Question' AND " + setupData.explicitFilter;
-    config.recordsCount = undefined;
   } else {
     config.request = "select A,B,C,D,E,F,G,H Where C != 'Question'" + (config.excludeUnfilledQuestions ? addEmptyQuestionExclusionCondition() : "");
   }
