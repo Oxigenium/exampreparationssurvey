@@ -65,7 +65,7 @@ function requestTable(filter, callback, templateId, allRecords = false) {
     fetchSize:
       config.limitRecordsAfterShuffling || allRecords
         ? undefined
-        : config.recordsCount - 1,
+        : config.recordsCount || 0  - 1,
     query: filter,
     rowTemplate: template(templateId || "template"),
     callback: function (error, options, response) {
@@ -223,7 +223,7 @@ function transformQuestions(html) {
   var pages = JSON.parse("[" + html.slice(0, -1) + "]").map(p => addImgToTitleIfNeccesary(p));
   var jsonString =
     '{"title":"OCP Test","showProgressBar": "bottom","showTimerPanel": "top","maxTimeToFinish": ' +
-    config.timePerQuestion * Math.min(config.recordsCount, pages.length) +
+    config.timePerQuestion * (config.recordsCount !== undefined ? Math.min(config.recordsCount, pages.length) : pages.length) +
     ', "completedHtml":"<h4>You got <b>{correctAnswers}</b> out of <b>{questionCount}</b> correct answers. Question ids with wrong answers are printed to console.</h4>", "completedHtmlOnCondition": [{"expression": "{correctAnswers} == 0","html": "<h4>Unfortunately, none of your answers is correct. Please try again. Question ids are printed to console.</h4>"}, {"expression": "{correctAnswers} == {questionCount}","html": "<h4>Congratulations! You answered all the questions correctly!</h4>"}], "pages":' +
     JSON.stringify(
       config.questionsRandomOrder
