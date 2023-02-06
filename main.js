@@ -199,6 +199,7 @@ function fulfilSetupConfig(setupData, config) {
       "'" + (config.excludeUnfilledQuestions ? addEmptyQuestionExclusionCondition() : "");
   } else if (setupData.explicitFilter !== "") {
     config.request = "select A,B,C,D,E,F,G,H Where C != 'Question' AND " + setupData.explicitFilter;
+    config.recordsCount = undefined;
   } else {
     config.request = "select A,B,C,D,E,F,G,H Where C != 'Question'" + (config.excludeUnfilledQuestions ? addEmptyQuestionExclusionCondition() : "");
   }
@@ -229,7 +230,9 @@ function transformQuestions(html) {
         ? config.limitRecordsAfterShuffling
           ? arrayShuffle(pages).slice(0, config.recordsCount)
           : arrayShuffle(pages)
-        : pages
+        : config.limitRecordsAfterShuffling
+          ? pages.slice(0, config.recordsCount)
+          : pages
     ) +
     "}";
   var json = JSON.parse(jsonString);
