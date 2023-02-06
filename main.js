@@ -191,7 +191,7 @@ function toggleChoice(question, value, questionName, choice) {
 function fulfilSetupConfig(setupData, config) {
   config.questionsRandomOrder = setupData.shuffle;
   config.preventPageChangeOnIncorrect = !setupData.testMode;
-  config.recordsCount = +setupData.questionCount;
+  config.recordsCount = setupData.questionCount;
   if (setupData.chapter !== "none") {
     config.request =
       "select A,B,C,D,E,F,G,H Where D != '' AND C != 'Question' AND B = '" +
