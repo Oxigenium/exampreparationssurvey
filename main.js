@@ -4,6 +4,7 @@ var config = {
   tableLink:
     "https://docs.google.com/spreadsheets/d/1UvH8jHZu3mLjZv-gJaMIZOXlwkOBm_pnZrCUsW9f1Mk/edit#gid=0?usp=sharing",
   preventPageChangeOnIncorrect: true,
+  testMode: false,
   insertPre: true,
   request: "select A,B,C,D,E,F,G,H Where C != 'Question' AND C = 'C2Q23'",
   recordsCount: 50,
@@ -12,6 +13,7 @@ var config = {
   timePerQuestion: (90 * 60) / 50,
   initialization: true,
   allowSkipEntireTest: true,
+  pageNavigation: false,
   useHotkeys: true,
   answersRandomOrder: true,
   questionsRandomOrder: true
@@ -84,6 +86,10 @@ function makeQuiz(html) {
   const json = transformQuestions(html);
   const survey = new Survey.Model(json);
   survey.focusFirstQuestionAutomatic = false;
+
+  if (config.pageNavigation) {
+    survey.ignoreValidation = true;
+  }
 
   if (config.allowSkipEntireTest) {
     survey.addNavigationItem({
@@ -206,7 +212,13 @@ function toggleChoice(question, value, questionName, choice) {
 function fulfilSetupConfig(setupData, config) {
   config.questionsRandomOrder = setupData.shuffle;
   config.answersRandomOrder = setupData.shuffleAnswers;
-  config.preventPageChangeOnIncorrect = !setupData.testMode;
+  if (setupData.testMode) {
+    config.testMode = setupData.testMode;
+    config.preventPageChangeOnIncorrect = false;
+    config.answersRandomOrder = false;
+    config.allowSkipEntireTest = false;
+    config.pageNavigation = true;
+  }
   config.recordsCount = setupData.questionCount;
   if (setupData.chapter !== "none") {
     config.request =
@@ -223,7 +235,7 @@ function fulfilSetupConfig(setupData, config) {
 function combineSetupSurvey(html) {
   var choices = JSON.parse("[" + html.slice(0, -1) + "]");
   var jsonString =
-    '{"showQuestionNumbers": "off","elements":[{"type":"boolean","name":"shuffle","defaultValue":'+config.questionsRandomOrder+',"title":"Shuffle questions?"},{"type":"boolean","name":"shuffleAnswers","defaultValue":'+config.answersRandomOrder+',"title":"Shuffle answers?"},{"type":"boolean","name":"testMode","defaultValue":'+!config.preventPageChangeOnIncorrect+',"title":"Test mode?"},{"type":"text","name":"questionCount","inputType":"number","title":"Questions count?","defaultValue":'+config.recordsCount+',"validators": [{ "type": "numeric", "text": "Value must be a number", "minValue":1, "maxValue": 231 }]},{"type": "dropdown","defaultValue":"none","name": "chapter","noneText":"all", "title": "Which chapter need to exam?","isRequired": true,"colCount": 0,"showNoneItem": true, "choices":' +
+    '{"showQuestionNumbers": "off","elements":[{"type":"boolean","name":"shuffle","defaultValue":'+config.questionsRandomOrder+',"title":"Shuffle questions?"},{"type":"boolean","name":"shuffleAnswers","defaultValue":'+config.answersRandomOrder+',"title":"Shuffle answers?"},{"type":"boolean","name":"testMode","defaultValue":'+config.testMode+',"title":"Test mode?"},{"type":"text","name":"questionCount","inputType":"number","title":"Questions count?","defaultValue":'+config.recordsCount+',"validators": [{ "type": "numeric", "text": "Value must be a number", "minValue":1, "maxValue": 231 }]},{"type": "dropdown","defaultValue":"none","name": "chapter","noneText":"all", "title": "Which chapter need to exam?","isRequired": true,"colCount": 0,"showNoneItem": true, "choices":' +
     JSON.stringify(choices) +
     '},{"type":"text","name":"explicitFilter","inputType":"text","title":"Explicit questions filter","defaultValue":""}]}';
   var json = JSON.parse(jsonString);
@@ -236,19 +248,24 @@ function template(id) {
 
 function transformQuestions(html) {
   var pages = JSON.parse("[" + html.slice(0, -1) + "]").map(p => addImgToTitleIfNeccesary(p));
+  if (config.questionsRandomOrder) {
+    pages = arrayShuffle(pages);
+  }
+  if (config.limitRecordsAfterShuffling) {
+    pages = pages.slice(0, config.recordsCount);
+  }
+  if (config.pageNavigation) {
+    for (let i = 0; i < pages.length; i++) {
+      pages[i].navigationTitle = ""+(i+1);
+      pages[i].navigationDescription = pages[i].elements[0].name;
+    }
+  }
+
   var jsonString =
-    '{"title":"OCP Test","showQuestionNumbers": "off","showProgressBar": "bottom","showTimerPanel": "top","maxTimeToFinish": ' +
+    '{"title":"OCP Test","showQuestionNumbers": "off","progressBarType":"'+(config.pageNavigation?'buttons':'pages')+'","showProgressBar": "bottom","showTimerPanel": "top","maxTimeToFinish": ' +
     config.timePerQuestion * (config.recordsCount !== undefined ? Math.min(config.recordsCount, pages.length) : pages.length) +
     ', "completedHtml":"<h4>You got <b>{correctAnswers}</b> out of <b>{questionCount}</b> correct answers. Question ids with wrong answers are printed to console.</h4>", "completedHtmlOnCondition": [{"expression": "{correctAnswers} == 0","html": "<h4>Unfortunately, none of your answers is correct. Please try again. Question ids are printed to console.</h4>"}, {"expression": "{correctAnswers} == {questionCount}","html": "<h4>Congratulations! You answered all the questions correctly!</h4>"}], "pages":' +
-    JSON.stringify(
-      config.questionsRandomOrder
-        ? config.limitRecordsAfterShuffling
-          ? arrayShuffle(pages).slice(0, config.recordsCount)
-          : arrayShuffle(pages)
-        : config.limitRecordsAfterShuffling
-          ? pages.slice(0, config.recordsCount)
-          : pages
-    ) +
+    JSON.stringify(pages) +
     "}";
   var json = JSON.parse(jsonString);
   return json;
