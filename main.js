@@ -11,6 +11,7 @@ var config = {
   limitRecordsAfterShuffling: true,
   timePerQuestion: (90 * 60) / 50,
   initialization: true,
+  allowSkipEntireTest: true,
   useHotkeys: true,
   answersRandomOrder: true,
   questionsRandomOrder: true
@@ -83,6 +84,19 @@ function makeQuiz(html) {
   const json = transformQuestions(html);
   const survey = new Survey.Model(json);
   survey.focusFirstQuestionAutomatic = false;
+
+  if (config.allowSkipEntireTest) {
+    survey.addNavigationItem({
+      id: "survey_end_test",
+      title: "Stop testing",
+      visibleIndex: 49, // "Complete" button has the visibleIndex 50.
+      action: () => {
+        config.preventPageChangeOnIncorrect = false;
+        survey.currentPage.elements[0].isRequired = false;
+        survey.completeLastPage();
+      }
+    });
+  }
 
   $("#surveyContainer").Survey({
     model: survey,
