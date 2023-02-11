@@ -223,7 +223,7 @@ function template(id) {
 function transformQuestions(html) {
   var pages = JSON.parse("[" + html.slice(0, -1) + "]").map(p => addImgToTitleIfNeccesary(p));
   var jsonString =
-    '{"title":"OCP Test","showProgressBar": "bottom","showTimerPanel": "top","maxTimeToFinish": ' +
+    '{"title":"OCP Test","showQuestionNumbers": "off","showProgressBar": "bottom","showTimerPanel": "top","maxTimeToFinish": ' +
     config.timePerQuestion * (config.recordsCount !== undefined ? Math.min(config.recordsCount, pages.length) : pages.length) +
     ', "completedHtml":"<h4>You got <b>{correctAnswers}</b> out of <b>{questionCount}</b> correct answers. Question ids with wrong answers are printed to console.</h4>", "completedHtmlOnCondition": [{"expression": "{correctAnswers} == 0","html": "<h4>Unfortunately, none of your answers is correct. Please try again. Question ids are printed to console.</h4>"}, {"expression": "{correctAnswers} == {questionCount}","html": "<h4>Congratulations! You answered all the questions correctly!</h4>"}], "pages":' +
     JSON.stringify(
