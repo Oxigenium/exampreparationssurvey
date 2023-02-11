@@ -12,6 +12,7 @@ var config = {
   timePerQuestion: (90 * 60) / 50,
   initialization: true,
   useHotkeys: true,
+  answersRandomOrder: true,
   questionsRandomOrder: true
 };
 
@@ -190,6 +191,7 @@ function toggleChoice(question, value, questionName, choice) {
 
 function fulfilSetupConfig(setupData, config) {
   config.questionsRandomOrder = setupData.shuffle;
+  config.answersRandomOrder = setupData.shuffleAnswers;
   config.preventPageChangeOnIncorrect = !setupData.testMode;
   config.recordsCount = setupData.questionCount;
   if (setupData.chapter !== "none") {
@@ -197,7 +199,7 @@ function fulfilSetupConfig(setupData, config) {
       "select A,B,C,D,E,F,G,H Where D != '' AND C != 'Question' AND B = '" +
       setupData.chapter +
       "'" + (config.excludeUnfilledQuestions ? addEmptyQuestionExclusionCondition() : "");
-  } else if (setupData.explicitFilter !== "") {
+  } else if (setupData.explicitFilter && setupData.trim()) {
     config.request = "select A,B,C,D,E,F,G,H Where C != 'Question' AND " + setupData.explicitFilter;
   } else {
     config.request = "select A,B,C,D,E,F,G,H Where C != 'Question'" + (config.excludeUnfilledQuestions ? addEmptyQuestionExclusionCondition() : "");
@@ -207,7 +209,7 @@ function fulfilSetupConfig(setupData, config) {
 function combineSetupSurvey(html) {
   var choices = JSON.parse("[" + html.slice(0, -1) + "]");
   var jsonString =
-    '{"showQuestionNumbers": "off","elements":[{"type":"boolean","name":"shuffle","defaultValue":'+config.questionsRandomOrder+',"title":"Shuffle?"},{"type":"boolean","name":"testMode","defaultValue":'+!config.preventPageChangeOnIncorrect+',"title":"Test mode?"},{"type":"text","name":"questionCount","inputType":"number","title":"Questions count?","defaultValue":'+config.recordsCount+',"validators": [{ "type": "numeric", "text": "Value must be a number", "minValue":1, "maxValue": 231 }]},{"type": "dropdown","defaultValue":"none","name": "chapter","noneText":"all", "title": "Which chapter need to exam?","isRequired": true,"colCount": 0,"showNoneItem": true, "choices":' +
+    '{"showQuestionNumbers": "off","elements":[{"type":"boolean","name":"shuffle","defaultValue":'+config.questionsRandomOrder+',"title":"Shuffle questions?"},{"type":"boolean","name":"shuffleAnswers","defaultValue":'+config.answersRandomOrder+',"title":"Shuffle answers?"},{"type":"boolean","name":"testMode","defaultValue":'+!config.preventPageChangeOnIncorrect+',"title":"Test mode?"},{"type":"text","name":"questionCount","inputType":"number","title":"Questions count?","defaultValue":'+config.recordsCount+',"validators": [{ "type": "numeric", "text": "Value must be a number", "minValue":1, "maxValue": 231 }]},{"type": "dropdown","defaultValue":"none","name": "chapter","noneText":"all", "title": "Which chapter need to exam?","isRequired": true,"colCount": 0,"showNoneItem": true, "choices":' +
     JSON.stringify(choices) +
     '},{"type":"text","name":"explicitFilter","inputType":"text","title":"Explicit questions filter","defaultValue":""}]}';
   var json = JSON.parse(jsonString);
@@ -245,6 +247,9 @@ function splitVariants(variants) {
   var vars = [];
   for (var i = 0; i< splittedVars.length; i = i + 2) {
     vars.push({ value: splittedVars[i], text: config.insertPre ? addPre(splittedVars[i] + ' ' + splittedVars[i+1]) : splittedVars[i] + ' ' + splittedVars[i+1] });
+  }
+  if (config.answersRandomOrder) {
+    vars = arrayShuffle(vars);
   }
   return JSON.stringify(vars);
 }
