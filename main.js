@@ -126,20 +126,33 @@ function formatDate(currentDate) {
 
 function printResult(survey, options) {
   var answers = survey.data;
-  var questions = survey.getQuestionsByNames(Object.keys(answers));
-  var resultsByQuestion = questions.map(q => { 
-    return {
+  var allQuestions = survey.getAllQuestions().filter(q => q.name != 'reasoning');
+  var answeredQuestions = survey.getQuestionsByNames(Object.keys(answers));
+  var resultsByQuestion = allQuestions.map(q => ({
       question: q.name,
       answer: answers[q.name],
+      isSkipped: !answers.hasOwnProperty(q.name),
       correctAnswer: q.correctAnswer,
       isAnswerCorrect: q.isAnswerCorrect(),
       wasMistakes: +(q.hasOwnProperty('wasMistakes') ? q.wasMistakes : !q.isAnswerCorrect()),
       date: formatDate(new Date())
-    };
-  });
-  var tableWithResult = resultsByQuestion.map(r => `${r.question}\t${r.wasMistakes}\t${r.answer}\t${r.date}`).join('\n');
+    }));
+  calculateAndSaveResults(survey, resultsByQuestion);
+  var tableWithResult = resultsByQuestion.filter(q => !q.isSkipped).map(r => `${r.question}\t${r.wasMistakes}\t${r.answer}\t${r.date}`).join('\n');
   copyToClipboard(tableWithResult);
   console.log(tableWithResult);
+}
+
+function calculateAndSaveResults(survey, resultsByQuestion) {
+  const answersWithoutMistake = resultsByQuestion.filter(q=> !q.wasMistakes).length;
+  const skippedQuestions = resultsByQuestion.filter(q=> q.isSkipped).length;
+  const answeredQuestions = resultsByQuestion.length - skippedQuestions;
+  const testScore = Math.round(100 * (answersWithoutMistake / resultsByQuestion.length));
+
+  survey.setValue("answersWithoutMistake", answersWithoutMistake);
+  survey.setValue("skippedQuestions", skippedQuestions);
+  survey.setValue("answeredQuestions", answeredQuestions);
+  survey.setValue("testScore", testScore);
 }
 
 function copyToClipboard(text) {
@@ -264,7 +277,7 @@ function transformQuestions(html) {
   var jsonString =
     '{"title":"OCP Test","showQuestionNumbers": "off","progressBarType":"'+(config.pageNavigation?'buttons':'pages')+'","showProgressBar": "bottom","showTimerPanel": "top","maxTimeToFinish": ' +
     config.timePerQuestion * (config.recordsCount !== undefined ? Math.min(config.recordsCount, pages.length) : pages.length) +
-    ', "completedHtml":"<h4>You got <b>{correctAnswers}</b> out of <b>{questionCount}</b> correct answers. Question ids with wrong answers are printed to console.</h4>", "completedHtmlOnCondition": [{"expression": "{correctAnswers} == 0","html": "<h4>Unfortunately, none of your answers is correct. Please try again. Question ids are printed to console.</h4>"}, {"expression": "{correctAnswers} == {questionCount}","html": "<h4>Congratulations! You answered all the questions correctly!</h4>"}], "pages":' +
+    ', "completedHtml":"<h4>Test finished, but there is a trouble to determine results. Correct answers = {answersWithoutMistake}. Skipped = {skippedQuestions}. Score = {testScore}. Questions count = {questionCount}</h4>","completedHtmlOnCondition":[{"expression":"{answersWithoutMistake} == 0","html":"<h4>Unfortunately, none of your answers were correct. Please try again. Test result is copied to clipboard</h4>"},{"expression":"{answersWithoutMistake} != 0 && {skippedQuestions} == 0 && {testScore} < 68","html":"<h4>Unfortunately, you answered correctly <b>{answersWithoutMistake}</b> out of <b>{questionCount}</b> questions and didn\'t got the passing score (<b>{testScore}%</b>). Test result is copied to clipboard</h4>"},{"expression":"{answersWithoutMistake} != 0 && {skippedQuestions} > 0 && {testScore} < 68","html":"<h4>Unfortunately, you skipped <b>{skippedQuestions}</b> questions during the test, but answered correctly <b>{answersWithoutMistake}</b> out of <b>{answeredQuestions}</b> others and didn\'t got the passing score (<b>{testScore}%</b>). Test result is copied to clipboard</h4>"},{"expression":"{answersWithoutMistake} != 0 && {skippedQuestions} == 0 && {testScore} >= 68","html":"<h4>You answered correctly <b>{answersWithoutMistake}</b> out of <b>{questionCount}</b> questions and <b>passed!</b> (<b>{testScore}%</b>) Test result is copied to clipboard</h4>"},{"expression":"{answersWithoutMistake} != 0 && {skippedQuestions} > 0 && {testScore} >= 68","html":"<h4>You skipped <b>{skippedQuestions}</b> questions during the test, but answered correctly <b>{answersWithoutMistake}</b> out of <b>{answeredQuestions}</b> others and <b>passed!</b> (<b>{testScore}%</b>) Test result is copied to clipboard</h4>"},{"expression":"{answersWithoutMistake} == {questionCount}","html":"<h4>Congratulations! You answered all the questions correctly! Test result is copied to clipboard</h4>"}], "pages":' +
     JSON.stringify(pages) +
     "}";
   var json = JSON.parse(jsonString);
